@@ -8,6 +8,10 @@ export function getProxiedImageUrl(url?: string): string {
   return url;
 }
 
+export function getDirectZipUrl(toonId: string, num: string): string {
+  return `/api/download-direct-zip?toonId=${encodeURIComponent(toonId)}&num=${encodeURIComponent(num)}`;
+}
+
 export async function searchManhwa(query: string): Promise<ManhwaItem[]> {
   const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
   if (!res.ok) throw new Error('Failed to search manhwa');

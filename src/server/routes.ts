@@ -79,6 +79,69 @@ apiRouter.get('/toon', async (req: Request, res: Response) => {
   }
 });
 
+// Direct Streaming ZIP Download (Vercel Serverless Compatible)
+apiRouter.get('/download-direct-zip', async (req: Request, res: Response) => {
+  try {
+    const toonId = req.query.toonId as string;
+    const num = req.query.num as string;
+
+    if (!toonId || !num) {
+      return res.status(400).send('Missing toonId or num parameters');
+    }
+
+    const settings = getSettings();
+    const imageUrls = await getChapterImageUrls(toonId, num);
+
+    if (imageUrls.length === 0) {
+      return res.status(404).send('No chapter images found');
+    }
+
+    const safeTitle = `Chapter_${num}`;
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(safeTitle)}.zip"`);
+
+    const archive = archiver('zip', { zlib: { level: 6 } });
+    archive.pipe(res);
+
+    const concurrency = Math.max(1, Math.min(settings.maxConcurrentImages, 8));
+
+    for (let i = 0; i < imageUrls.length; i += concurrency) {
+      const chunk = imageUrls.slice(i, i + concurrency);
+      await Promise.all(
+        chunk.map(async (url, idx) => {
+          const imgIndex = i + idx;
+          const extMatch = url.match(/\.(jpg|jpeg|png|webp)/i);
+          const ext = extMatch ? extMatch[1] : 'jpg';
+          const fileName = `${String(imgIndex + 1).padStart(3, '0')}.${ext}`;
+
+          try {
+            const imgRes = await fetch(url, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Referer': `${settings.baseUrl}/`,
+              }
+            });
+
+            if (imgRes.ok) {
+              const buffer = Buffer.from(await imgRes.arrayBuffer());
+              archive.append(buffer, { name: fileName });
+            }
+          } catch (err) {
+            console.error(`Failed to fetch image ${url} for direct zip:`, err);
+          }
+        })
+      );
+    }
+
+    await archive.finalize();
+  } catch (err: any) {
+    console.error('Direct stream zip error:', err);
+    if (!res.headersSent) {
+      res.status(500).send(err.message || 'Direct ZIP streaming error');
+    }
+  }
+});
+
 // Download Single Chapter
 apiRouter.post('/download/chapter', async (req: Request, res: Response) => {
   try {
