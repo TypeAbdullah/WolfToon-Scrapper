@@ -16,6 +16,7 @@ settings.json
 .env.local
 
 # Temp test files
-*.html
+*_out.html
+detail_*.html
 test_*.js
 parse_*.js
