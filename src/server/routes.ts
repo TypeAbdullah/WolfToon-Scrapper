@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
-import { searchManhwa, browseManhwa, getManhwaDetail } from './scraper.js';
+import archiver from 'archiver';
+import { searchManhwa, browseManhwa, getManhwaDetail, getChapterImageUrls } from './scraper.js';
 import { createDownloadTask, createBatchDownloadTasks, getAllTasks, cancelTask, subscribeSSE } from './downloader.js';
 import { getSettings, saveSettings } from './config.js';
 
@@ -108,7 +109,7 @@ apiRouter.get('/download-direct-zip', async (req: Request, res: Response) => {
     for (let i = 0; i < imageUrls.length; i += concurrency) {
       const chunk = imageUrls.slice(i, i + concurrency);
       await Promise.all(
-        chunk.map(async (url, idx) => {
+        chunk.map(async (url: string, idx: number) => {
           const imgIndex = i + idx;
           const extMatch = url.match(/\.(jpg|jpeg|png|webp)/i);
           const ext = extMatch ? extMatch[1] : 'jpg';
