@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+.pnpm-store
+
+# Production build outputs
+dist/
+build/
+
+# Downloaded files & local user settings
+downloads/
+settings.json
+*.log
+
+# Environment variables
+.env
+.env.local
+
+# Temp test files
+*.html
+test_*.js
+parse_*.js
