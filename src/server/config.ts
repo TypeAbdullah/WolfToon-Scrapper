@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { fileURLToPath } from 'url';
 import { AppSettings } from '../shared/types.js';
 
@@ -7,8 +8,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '../../');
 
-const SETTINGS_FILE = path.join(rootDir, 'settings.json');
-const DEFAULT_DOWNLOAD_DIR = path.join(rootDir, 'downloads');
+const SETTINGS_FILE = process.env.VERCEL
+  ? path.join(os.tmpdir(), 'settings.json')
+  : path.join(rootDir, 'settings.json');
+
+const DEFAULT_DOWNLOAD_DIR = process.env.VERCEL
+  ? path.join(os.tmpdir(), 'downloads')
+  : path.join(rootDir, 'downloads');
 
 const defaultSettings: AppSettings = {
   baseUrl: 'https://wfwf433.com',
@@ -29,9 +35,13 @@ export function loadSettings(): AppSettings {
     console.error('Failed to load settings file, using defaults:', err);
   }
   
-  // Ensure download dir exists
-  if (!fs.existsSync(currentSettings.downloadDir)) {
-    fs.mkdirSync(currentSettings.downloadDir, { recursive: true });
+  // Safely ensure download dir exists
+  try {
+    if (!fs.existsSync(currentSettings.downloadDir)) {
+      fs.mkdirSync(currentSettings.downloadDir, { recursive: true });
+    }
+  } catch (err) {
+    console.warn('Could not create download directory:', err);
   }
 
   return currentSettings;
@@ -48,11 +58,15 @@ export function saveSettings(newSettings: Partial<AppSettings>): AppSettings {
   try {
     fs.writeFileSync(SETTINGS_FILE, JSON.stringify(currentSettings, null, 2), 'utf-8');
   } catch (err) {
-    console.error('Failed to save settings:', err);
+    console.error('Failed to save settings file:', err);
   }
 
-  if (!fs.existsSync(currentSettings.downloadDir)) {
-    fs.mkdirSync(currentSettings.downloadDir, { recursive: true });
+  try {
+    if (!fs.existsSync(currentSettings.downloadDir)) {
+      fs.mkdirSync(currentSettings.downloadDir, { recursive: true });
+    }
+  } catch (err) {
+    console.warn('Could not create download directory:', err);
   }
 
   return currentSettings;
