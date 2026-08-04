@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '../../');
 
-const app = express();
+export const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
@@ -24,7 +24,7 @@ const settings = getSettings();
 app.use('/downloads', express.static(settings.downloadDir));
 
 // Serve built frontend assets in production
-const clientDist = path.join(rootDir, 'dist/client');
+const clientDist = path.join(rootDir, 'dist');
 app.use(express.static(clientDist));
 
 app.get('*', (req, res) => {
@@ -39,10 +39,12 @@ app.get('*', (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`====================================================`);
-  console.log(` WFWF Manhwa Scraper Server running on port ${PORT}`);
-  console.log(` Target Site URL: ${settings.baseUrl}`);
-  console.log(` Downloads Directory: ${settings.downloadDir}`);
-  console.log(`====================================================`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`====================================================`);
+    console.log(` WFWF Manhwa Scraper Server running on port ${PORT}`);
+    console.log(` Target Site URL: ${settings.baseUrl}`);
+    console.log(` Downloads Directory: ${settings.downloadDir}`);
+    console.log(`====================================================`);
+  });
+}

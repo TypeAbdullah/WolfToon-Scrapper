@@ -4,6 +4,10 @@
 
   **A High-Performance Korean Raw Manhwa Scraper & Batch Downloader with a Modern Vercel-Style Web UI**
 
+  [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FTypeAbdullah%2FWolfToon-Scrapper)
+
+  <br />
+
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
   [![Node.js](https://img.shields.io/badge/Node.js-22.x-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
   [![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
@@ -24,17 +28,26 @@ Built with a high-contrast **Vercel Black & White Glassmorphic UI**, this tool o
 
 ---
 
+## ⚡ Direct Deploy to Vercel
+
+Deploy your own live instance of WolfToon Scrapper to Vercel with one click:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FTypeAbdullah%2FWolfToon-Scrapper)
+
+---
+
 ## ✨ Features
 
 - 🐺 **Wolf Toon (늑대닷컴) Integration**: Specifically crafted for `wfwf433.com` and its raw manhwa repository.
 - 📦 **Batch & Single Chapter ZIP Downloader**:
   - Download individual chapters as `.zip` archives.
   - Multi-select checkboxes or use **Range Selection** (e.g. select Ch. 1 to 50) to batch download multiple chapters simultaneously.
+  - Includes **Direct Streaming ZIP Download** endpoint (`/api/download-direct-zip`) optimized for Vercel serverless functions!
 - 🔄 **EUC-KR Query Encoding**: Transparent conversion of Korean search terms (`해골병사`, `나`, `나 혼자만`) for accurate site search.
 - 🔗 **Direct URL & Toon ID Parser**: Paste any WFWF link (e.g., `http://wfwf433.com/list?toon=75355` or `75355`) into the search bar for instant series loading.
 - 🛡️ **Built-in Image Proxy**: Streams thumbnails and raw chapter images through `/api/proxy-image` with custom `Referer` and `User-Agent` headers to prevent broken image links.
 - ⚡ **Real-Time Progress Streaming (SSE)**: Live progress bars, downloaded image counters, and status updates (Queued, Downloading, Zipping, Complete, Failed).
-- 🎨 **Vercel Black & White Glassmorphism UI**: High-contrast monochrome aesthetic with responsive layouts and smooth micro-interactions.
+- 🎨 **Vercel Black & White Glassmorphic UI**: High-contrast monochrome aesthetic with responsive layouts and smooth micro-interactions.
 - ⚙️ **Configurable Target Domain**: Update the base site URL (e.g. `https://wfwf434.com`) directly in Settings without restarting the app if domain mirrors change.
 
 ---
@@ -45,7 +58,7 @@ Built with a high-contrast **Vercel Black & White Glassmorphic UI**, this tool o
 | :--- | :--- |
 | **Frontend** | React 19, Vite, TypeScript, Tailwind CSS, Lucide Icons |
 | **Backend** | Express 4, Node.js, `tsx`, `iconv-lite`, `archiver` |
-| **Communication** | REST API & Server-Sent Events (SSE) |
+| **Serverless** | Vercel Build Output API v3 (`api/index.ts`) |
 | **Packaging** | `archiver` ZIP streams |
 
 ---
@@ -96,6 +109,8 @@ The server will run on `http://localhost:3001` serving both the API and built st
 
 ```
 WolfToon-Scrapper/
+├── api/                         # Vercel Serverless Function entry point
+│   └── index.ts                 # Express app export for Vercel
 ├── src/
 │   ├── client/                  # Vite + React Frontend
 │   │   ├── components/          # Navbar, ManhwaCard, ManhwaGrid, DetailModal, DownloadManager, SettingsModal
@@ -103,7 +118,7 @@ WolfToon-Scrapper/
 │   │   ├── App.tsx              # Main layout & state
 │   │   └── index.css            # Tailwind & Vercel Glassmorphism utility styles
 │   ├── server/                  # Express Backend
-│   │   ├── index.ts             # Express entry point
+│   │   ├── index.ts             # Express entry point & app export
 │   │   ├── scraper.ts           # EUC-KR scraper & HTML parser
 │   │   ├── downloader.ts        # Image fetcher, ZIP queue & SSE broadcaster
 │   │   ├── routes.ts            # API routes & Image proxy
